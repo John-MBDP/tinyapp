@@ -61,7 +61,6 @@ app.get("/fetch", (req, res) => {
 
 // Handles post request for form submission
 
-
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   const longURL = req.body.longURL;
@@ -70,6 +69,13 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);         // Respond with 'Ok' (we will replace this)
 });
 
+//Handles delete post request
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL];
+  res.redirect("/urls");
+})
 
 
 app.listen(PORT, () => {
