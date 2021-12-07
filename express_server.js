@@ -28,7 +28,7 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
-})
+});
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
@@ -41,7 +41,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   console.log(urlDatabase);
-   console.log(req.params);
+  console.log(req.params);
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
@@ -51,13 +51,13 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/set", (req, res) => {
- const a = 1;
- res.send(`a = ${a}`);
+  const a = 1;
+  res.send(`a = ${a}`);
 });
 
-app.get("/fetch", (req, res) => {
- res.send(`a = ${a}`);
-});
+// app.get("/fetch", (req, res) => {
+//   res.send(`a = ${a}`);
+// });
 
 // Handles post request for form submission
 
@@ -70,14 +70,21 @@ app.post("/urls", (req, res) => {
 });
 
 //Handles delete post request
-
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
   res.redirect("/urls");
-})
+});
 
+//Handles Edit post request
+
+app.post("/urls/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  urlDatabase[shortURL] = req.body.updatedURL;
+  console.log(req.body.updatedURL);
+  res.redirect("/urls");
+});
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}`)
+  console.log(`Example app listening on port ${PORT}`);
 });
