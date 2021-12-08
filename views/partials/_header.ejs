@@ -16,19 +16,19 @@
       <button type="submit" class="btn btn-primary">Sign in</button>
       </div>
     </form>    -->
-    <%= username %>
-    <% if (!username) { %>
-      <div>
-    <form class="form-inline my-1" action="/login" method="POST">
-      <div class="form-group mb-2 mx-auto">
-      <input class="form-control" type="text" name="username" placeholder="Username" style="width: 300px; margin: 1em">
-      <button type="submit" class="btn btn-primary">Sign in</button>
-      </div>
-    </form>   
-      </div>
+    <% if (!user) { %>
+    <div>
+      <form class="form-inline my-1" action="/login" method="POST">
+        <div class="form-group mb-2 mx-auto">
+          <input class="form-control" type="text" name="username" placeholder="Username" style="width: 300px; margin: 1em" />
+          <button type="submit" class="btn btn-primary">Sign in</button>
+        </div>
+      </form>
+    </div>
     <% } else { %>
     <form class="form-inline my-1" action="/logout" method="POST">
       <div>
+        <p class="navbar-bra">Signed in as: <%= user.email %></p>
         <button type="submit" class="btn btn-outline-primary ml-3">Logout</button>
       </div>
     </form>
