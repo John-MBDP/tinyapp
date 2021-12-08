@@ -2,14 +2,28 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 const cookieParser = require("cookie-parser");
 const { request } = require("express");
-app.use(cookieParser())
+app.use(cookieParser());
 app.set("view engine", "ejs");
 
+// Database
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+
 //Generate a random string
-const generateRandomString = function() {
+const generateRandomString = function () {
   let randomString = "";
   for (let i = 0; i < 6; i++) {
     const randomCharCode = Math.floor(Math.random() * 26 + 97);
@@ -20,7 +34,7 @@ const generateRandomString = function() {
 };
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
+  b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
 
@@ -29,7 +43,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"]};
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   res.render("urls_index", templateVars);
 });
 
@@ -39,10 +53,9 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"]};
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"] };
   res.render("urls_show", templateVars);
 });
-
 
 app.get("/u/:shortURL", (req, res) => {
   console.log(urlDatabase);
@@ -70,8 +83,8 @@ app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   const longURL = req.body.longURL;
   urlDatabase[shortURL] = longURL;
-  console.log(req.body);  // Log the POST request body to the console
-  res.redirect(`/urls/${shortURL}`);         // Respond with 'Ok' (we will replace this)
+  console.log(req.body); // Log the POST request body to the console
+  res.redirect(`/urls/${shortURL}`); // Respond with 'Ok' (we will replace this)
 });
 
 //Handles delete post request
@@ -95,15 +108,47 @@ app.post("/login", (req, res) => {
   const username = req.body.username;
   res.cookie("username", username);
   res.redirect("/urls");
-})
+});
 
 //Clears cookies after user logsout
-app.post('/logout', (req, res) => {
-  const username = req.body.username
-  res.clearCookie('username', username);
-  res.redirect('/urls');
+app.post("/logout", (req, res) => {
+  const username = req.body.username;
+  res.clearCookie("username", username);
+  res.redirect("/urls");
+});
+
+//Handles Get registration
+app.get("/registration", (req, res) => {
+  res.render("urls_registration");
+});
+
+//Handles POST registration
+
+app.post("/registration", (req, res) => {
+  const user_id = generateRandomString();
+  // const email = req.body.email;
+  users[user_id] = {
+    id: user_id,
+    email: req.body.email,
+    password: req.body.password,
+  };
+  res.cookie("user_id", user_id);
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
 });
+
+// const users = {
+//   "userRandomID": {
+//     id: "userRandomID",
+//     email: "user@example.com",
+//     password: "purple-monkey-dinosaur"
+//   },
+//  "user2RandomID": {
+//     id: "user2RandomID",
+//     email: "user2@example.com",
+//     password: "dishwasher-funk"
+//   }
+// }
