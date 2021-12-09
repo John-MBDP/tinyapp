@@ -7,6 +7,8 @@ const cookieParser = require("cookie-parser");
 const { request } = require("express");
 app.use(cookieParser());
 app.set("view engine", "ejs");
+const cookieSession = require("cookie-session");
+app.use(cookieSession({ name: "session", secret: "john-tiny-app" }));
 
 // Database
 const users = {
@@ -43,24 +45,42 @@ const generateRandomString = function () {
   return randomString;
 };
 
+const urlsForUser = (id, database) => {
+  let userUrls = {};
+
+  for (const shortURL in database) {
+    if (database[shortURL].userID === id) {
+      userUrls[shortURL] = database[shortURL];
+    }
+  }
+
+  return userUrls;
+};
+
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
 
+// Redirects a new user to register
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/register");
 });
 
 app.get("/urls", (req, res) => {
   const user_id = req.cookies["user_id"];
   const user = users[user_id];
+  //
   const templateVars = { urls: urlDatabase, user: user };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
   const user_id = req.cookies["user_id"];
+  if (!user_id) {
+    res.redirect("/login");
+  }
+
   const user = users[user_id];
   const templateVars = { user: user };
   res.render("urls_new", templateVars);
@@ -101,6 +121,9 @@ app.get("/register", (req, res) => {
 // Handles post request for form submission
 
 app.post("/urls", (req, res) => {
+  if (!req.cookies.user_id) {
+    return res.status(404).send("You need to login to create/modify a TinyURL");
+  }
   const shortURL = generateRandomString();
   const longURL = req.body.longURL;
   urlDatabase[shortURL] = longURL;
