@@ -153,9 +153,15 @@ app.post("/urls", (req, res) => {
 
 //Handles delete post request
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const userID = req.cookies["user_id"];
   const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect("/urls");
+  if (shortURL in urlDatabase) {
+    if (userID === urlDatabase[shortURL].userID) {
+      delete urlDatabase[shortURL];
+      res.redirect("/urls");
+    }
+  }
+  res.send("You're not authorized to that");
 });
 
 //Handles Edit post request
