@@ -7,20 +7,30 @@ const cookieParser = require("cookie-parser");
 const { request } = require("express");
 app.use(cookieParser());
 app.set("view engine", "ejs");
-
+const cookieSession = require("cookie-session");
+app.use(cookieSession({ name: "session", secret: "john-tiny-app" }));
 // Database
-const users = {
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur",
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk",
-  },
-};
+// const users = {
+//   userRandomID: {
+//     id: "userRandomID",
+//     email: "user@example.com",
+//     password: "purple-monkey-dinosaur",
+//   },
+//   user2RandomID: {
+//     id: "user2RandomID",
+//     email: "user2@example.com",
+//     password: "dishwasher-funk",
+//   },
+// };
+
+// const urlDatabase = {
+//   b2xVn2: "http://www.lighthouselabs.ca",
+//   "9sm5xK": "http://www.google.com",
+// };
+
+const urlDatabase = {};
+const users = {};
+
 // function to check if email exists
 const findUserByEmail = (email) => {
   for (const userId in users) {
@@ -43,13 +53,8 @@ const generateRandomString = function () {
   return randomString;
 };
 
-const urlDatabase = {
-  b2xVn2: "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
-};
-
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/register");
 });
 
 app.get("/urls", (req, res) => {
@@ -59,11 +64,23 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+//PREVIOUS VERSION
+// app.get("/urls/new", (req, res) => {
+//   const user_id = req.cookies["user_id"];
+//   const user = users[user_id];
+//   const templateVars = { user: user };
+//   console.log("here", res.cookie("user_id"));
+//   res.render("urls_new", templateVars);
+// });
+
+//checks if user has a cookie / validating before showing anything
 app.get("/urls/new", (req, res) => {
-  const user_id = req.cookies["user_id"];
-  const user = users[user_id];
-  const templateVars = { user: user };
-  res.render("urls_new", templateVars);
+  if (req.session.user_id) {
+    const templateVars = { user: users[req.session.user_id] };
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.get("/urls/:shortURL", (req, res) => {
