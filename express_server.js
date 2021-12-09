@@ -77,7 +77,6 @@ app.get("/urls", (req, res) => {
   const user = users[user_id];
   const urls = {};
 
-  console.log("HERE", urlDatabase, user_id);
   for (let url in urlDatabase) {
     console.log(typeof user_id, typeof urlDatabase[url]);
     console.log(urlDatabase[url]);
@@ -155,6 +154,7 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.cookies["user_id"];
   const shortURL = req.params.shortURL;
+  //Only authorized users can delete / edit
   if (shortURL in urlDatabase) {
     if (userID === urlDatabase[shortURL].userID) {
       delete urlDatabase[shortURL];
