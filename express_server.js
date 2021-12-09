@@ -89,6 +89,11 @@ app.get("/set", (req, res) => {
   res.send(`a = ${a}`);
 });
 
+//Handles Get registration
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
 // app.get("/fetch", (req, res) => {
 //   res.send(`a = ${a}`);
 // });
@@ -121,8 +126,25 @@ app.post("/urls/:shortURL", (req, res) => {
 
 //Handles Post to /login
 app.post("/login", (req, res) => {
-  const username = req.body.username;
-  res.cookie("username", username);
+  console.log("req.body", req.body);
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if (!email || !password) {
+    return res.status(403).send("email and password cannot be blank");
+  }
+
+  const user = findUserByEmail(email);
+  console.log("user", user);
+
+  if (!user) {
+    return res.status(403).send("a user with that email doesn't exist");
+  }
+
+  if (user.password !== password) {
+    return res.status(403).send("your password doesnt match");
+  }
+  res.cookie("user_id", user.id);
   res.redirect("/urls");
 });
 
@@ -130,11 +152,6 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
   res.redirect("/urls");
-});
-
-//Handles Get registration
-app.get("/register", (req, res) => {
-  res.render("register");
 });
 
 //Handles POST registration
@@ -161,6 +178,14 @@ app.post("/register", (req, res) => {
   };
   res.cookie("user_id", user_id);
   res.redirect("/urls");
+});
+
+//Handles log in
+app.get("/login", (req, res) => {
+  const templateVars = {
+    user: users[req.cookies["user_id"]],
+  };
+  res.render("login", templateVars);
 });
 
 app.listen(PORT, () => {
