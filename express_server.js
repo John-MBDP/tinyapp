@@ -24,10 +24,6 @@ const users = {
   },
 };
 
-app.get("/urls/json", (req, res) => {
-  res.json(users);
-});
-
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
