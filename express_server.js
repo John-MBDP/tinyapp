@@ -3,15 +3,12 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
-// const uuid = require("uuid/v4");
-// const cookieParser = require("cookie-parser");
-// app.use(cookieParser());
-// const { request } = require("express");
 app.set("view engine", "ejs");
 const cookieSession = require("cookie-session");
 app.use(cookieSession({ name: "session", secret: "8f20be78-5940-11ec-bf63-0242ac130002" }));
 const bcrypt = require("bcryptjs");
 const salt = bcrypt.genSaltSync(10);
+const { authenticateUser, generateRandomString, findUserByEmail } = require(__dirname + "/helpers.js");
 
 // Database
 const users = {
@@ -26,45 +23,10 @@ const users = {
     password: "dishwasher-funk",
   },
 };
-// function to check if email exists
-const findUserByEmail = (email, database) => {
-  for (const userId in database) {
-    const user = users[userId];
-    if (user.email === email) {
-      return user;
-    }
-  }
-  return null;
-};
 
 app.get("/urls/json", (req, res) => {
   res.json(users);
 });
-
-//Generate a random string
-const generateRandomString = function () {
-  let randomString = "";
-  for (let i = 0; i < 6; i++) {
-    const randomCharCode = Math.floor(Math.random() * 26 + 97);
-    const randomChar = String.fromCharCode(randomCharCode);
-    randomString += randomChar;
-  }
-  return randomString;
-};
-//authenthication
-const authenticateUser = (email, password) => {
-  // retrieve the user with that email
-  const user = findUserByEmail(email, users);
-
-  // if we got a user back and the passwords match then return the userObj
-  if (user && bcrypt.compareSync(password, user.password)) {
-    // user is authenticated
-    return user;
-  } else {
-    // Otherwise return false
-    return false;
-  }
-};
 
 const urlDatabase = {
   b6UTxQ: {
@@ -76,17 +38,6 @@ const urlDatabase = {
     userID: "aJ48lW",
   },
 };
-
-//REFERENCE
-// const urlDatabase = {
-//   b2xVn2: "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com",
-// };
-
-// const urlDatabase = {
-//   b2xVn2: "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com",
-// };
 
 // Redirects a new user to register
 app.get("/", (req, res) => {
