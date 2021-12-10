@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 //authenthication
 const authenticateUser = (email, password) => {
   // retrieve the user with that email
-  const user = findUserByEmail(email, users);
+  const user = findUserByEmail(email);
 
   // if we got a user back and the passwords match then return the userObj
   if (user && bcrypt.compareSync(password, user.password)) {
@@ -30,7 +30,7 @@ const generateRandomString = function () {
 // looks for user in the Database
 const findUserByEmail = (email, database) => {
   for (const userId in database) {
-    const user = users[userId];
+    const user = database[userId];
     if (user.email === email) {
       return user;
     }

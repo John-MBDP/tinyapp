@@ -10,7 +10,7 @@ const bcrypt = require("bcryptjs");
 const salt = bcrypt.genSaltSync(10);
 const { authenticateUser, generateRandomString, findUserByEmail } = require(__dirname + "/helpers.js");
 
-// Database
+// ***********************DATABASE******************************
 const users = {
   userRandomID: {
     id: "userRandomID",
@@ -39,49 +39,49 @@ const urlDatabase = {
   },
 };
 
+// *********************** GET ROUTES***********************************
 // Redirects a new user to register
+
 app.get("/", (req, res) => {
   res.redirect("/register");
 });
 
+//Handles log in
+app.get("/login", (req, res) => {
+  const templateVars = {
+    user: users[req.session["user_id"]],
+  };
+  res.render("login", templateVars);
+});
+
+//Only shows links to users that creates them
 app.get("/urls", (req, res) => {
   const user_id = req.session["user_id"];
   const user = users[user_id];
   const urls = {};
 
   for (let url in urlDatabase) {
-    // console.log(typeof user_id, typeof urlDatabase[url]);
-    // console.log(urlDatabase[url]);
     ///adding urls to the new urls / belongs to the user
     if (user_id === urlDatabase[url].userID) {
       urls[url] = urlDatabase[url].longURL;
     }
   }
-
-  console.log(urls);
-
-  //
   const templateVars = { urls: urls, user: user };
   res.render("urls_index", templateVars);
 });
 
+//If user is not registered
 app.get("/urls/new", (req, res) => {
   const user_id = req.session["user_id"];
   if (!user_id) {
     res.redirect("/login");
   }
-
   const user = users[user_id];
   const templateVars = { user: user };
   res.render("urls_new", templateVars);
 });
 
-// app.get("/urls/:shortURL", (req, res) => {
-//   const user_id = req.session["user_id"];
-//   const user = users[user_id];
-//   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: user };
-//   res.render("urls_show", templateVars);
-// });
+//Editing the params &&
 app.get("/urls/:shortURL", (req, res) => {
   const user_id = req.session["user_id"];
   const user = users[user_id];
@@ -97,30 +97,16 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+//Creating Long URLS
 app.get("/u/:shortURL", (req, res) => {
-  console.log(urlDatabase);
-  console.log(req.params);
   const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
-app.get("/set", (req, res) => {
-  const a = 1;
-  res.send(`a = ${a}`);
 });
 
 //Handles Get registration
 app.get("/register", (req, res) => {
   res.render("register");
 });
-
-// app.get("/fetch", (req, res) => {
-//   res.send(`a = ${a}`);
-// });
 
 // Handles post request for form submission
 
@@ -151,7 +137,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 //Handles Edit post request
-
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   urlDatabase[shortURL].longURL = req.body.updatedURL;
@@ -170,7 +155,6 @@ app.post("/login", (req, res) => {
   }
 
   const user = authenticateUser(email, password);
-  console.log("user", user);
 
   if (user) {
     req.session["user_id"] = user.id;
@@ -178,13 +162,6 @@ app.post("/login", (req, res) => {
   } else {
     res.status(403).send(`Your credentials doesn't match.`);
   }
-
-  // if (user.password !== password) {
-  //   return res.status(403).send("your password doesnt match");
-  // }
-  // // req.cookie("user_id", user.id);
-  // req.session["user_id"];
-  // res.redirect("/urls");
 });
 
 //Clears cookies after user logsout
@@ -194,7 +171,6 @@ app.post("/logout", (req, res) => {
 });
 
 //Handles POST registration
-
 app.post("/register", (req, res) => {
   const user_id = generateRandomString();
   const email = req.body.email;
@@ -218,14 +194,6 @@ app.post("/register", (req, res) => {
   // res.cookie("user_id", user_id);
   req.session["user_id"] = user_id;
   res.redirect("/urls");
-});
-
-//Handles log in
-app.get("/login", (req, res) => {
-  const templateVars = {
-    user: users[req.session["user_id"]],
-  };
-  res.render("login", templateVars);
 });
 
 app.listen(PORT, () => {
