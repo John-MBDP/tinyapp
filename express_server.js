@@ -146,7 +146,6 @@ app.post("/urls/:shortURL", (req, res) => {
 
 //Handles Post to /login
 app.post("/login", (req, res) => {
-  console.log("req.body", req.body);
   const email = req.body.email;
   const password = req.body.password;
 
@@ -154,8 +153,8 @@ app.post("/login", (req, res) => {
     return res.status(403).send("email and password cannot be blank");
   }
 
-  const user = authenticateUser(email, password);
-
+  const user = authenticateUser(email, password, users);
+  console.log(user);
   if (user) {
     req.session["user_id"] = user.id;
     res.redirect("/urls");
@@ -181,7 +180,6 @@ app.post("/register", (req, res) => {
   }
 
   const user = findUserByEmail(email, users);
-
   if (user) {
     return res.status(400).send("a user with that email already exists");
   }

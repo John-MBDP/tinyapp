@@ -1,11 +1,20 @@
 //Encryption
 const bcrypt = require("bcryptjs");
-
+const salt = bcrypt.genSaltSync(10);
+// looks for user in the Database
+const findUserByEmail = (email, database) => {
+  for (const userId in database) {
+    const user = database[userId];
+    if (user.email === email) {
+      return user;
+    }
+  }
+  return null;
+};
 //authenthication
-const authenticateUser = (email, password) => {
+const authenticateUser = (email, password, database) => {
   // retrieve the user with that email
-  const user = findUserByEmail(email);
-
+  const user = findUserByEmail(email, database);
   // if we got a user back and the passwords match then return the userObj
   if (user && bcrypt.compareSync(password, user.password)) {
     // user is authenticated
@@ -25,17 +34,6 @@ const generateRandomString = function () {
     randomString += randomChar;
   }
   return randomString;
-};
-
-// looks for user in the Database
-const findUserByEmail = (email, database) => {
-  for (const userId in database) {
-    const user = database[userId];
-    if (user.email === email) {
-      return user;
-    }
-  }
-  return null;
 };
 
 module.exports = {
