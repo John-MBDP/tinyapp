@@ -3,12 +3,15 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
-const cookieParser = require("cookie-parser");
-const { request } = require("express");
-app.use(cookieParser());
+// const uuid = require("uuid/v4");
+// const cookieParser = require("cookie-parser");
+// app.use(cookieParser());
+// const { request } = require("express");
 app.set("view engine", "ejs");
 const cookieSession = require("cookie-session");
-app.use(cookieSession({ name: "session", secret: "john-tiny-app" }));
+app.use(cookieSession({ name: "session", secret: "8f20be78-5940-11ec-bf63-0242ac130002" }));
+const bcrypt = require("bcryptjs");
+const salt = bcrypt.genSaltSync(10);
 
 // Database
 const users = {
@@ -34,6 +37,10 @@ const findUserByEmail = (email) => {
   return null;
 };
 
+app.get("/urls/json", (req, res) => {
+  res.json(users);
+});
+
 //Generate a random string
 const generateRandomString = function () {
   let randomString = "";
@@ -43,6 +50,20 @@ const generateRandomString = function () {
     randomString += randomChar;
   }
   return randomString;
+};
+//authenthication
+const authenticateUser = (email, password) => {
+  // retrieve the user with that email
+  const user = findUserByEmail(email);
+
+  // if we got a user back and the passwords match then return the userObj
+  if (user && bcrypt.compareSync(password, user.password)) {
+    // user is authenticated
+    return user;
+  } else {
+    // Otherwise return false
+    return false;
+  }
 };
 
 const urlDatabase = {
@@ -73,7 +94,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const user_id = req.cookies["user_id"];
+  const user_id = req.session["user_id"];
   const user = users[user_id];
   const urls = {};
 
@@ -94,7 +115,7 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const user_id = req.cookies["user_id"];
+  const user_id = req.session["user_id"];
   if (!user_id) {
     res.redirect("/login");
   }
@@ -105,7 +126,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const user_id = req.cookies["user_id"];
+  const user_id = req.session["user_id"];
   const user = users[user_id];
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: user };
   res.render("urls_show", templateVars);
@@ -139,10 +160,10 @@ app.get("/register", (req, res) => {
 // Handles post request for form submission
 
 app.post("/urls", (req, res) => {
-  if (!req.cookies.user_id) {
+  if (!req.session.user_id) {
     return res.status(404).send("You need to login to create/modify a TinyURL");
   }
-  const userID = req.cookies["user_id"];
+  const userID = req.session["user_id"];
   const shortURL = generateRandomString();
   const longURL = req.body.longURL;
   urlDatabase[shortURL] = { longURL: longURL, userID: userID };
@@ -152,7 +173,7 @@ app.post("/urls", (req, res) => {
 
 //Handles delete post request
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session["user_id"];
   const shortURL = req.params.shortURL;
   //Only authorized users can delete / edit
   if (shortURL in urlDatabase) {
@@ -183,23 +204,27 @@ app.post("/login", (req, res) => {
     return res.status(403).send("email and password cannot be blank");
   }
 
-  const user = findUserByEmail(email);
+  const user = authenticateUser(email, password);
   console.log("user", user);
 
-  if (!user) {
-    return res.status(403).send("a user with that email doesn't exist");
+  if (user) {
+    req.session["user_id"] = user.id;
+    res.redirect("/urls");
+  } else {
+    res.status(403).send(`Your credentials doesn't match.`);
   }
 
-  if (user.password !== password) {
-    return res.status(403).send("your password doesnt match");
-  }
-  res.cookie("user_id", user.id);
-  res.redirect("/urls");
+  // if (user.password !== password) {
+  //   return res.status(403).send("your password doesnt match");
+  // }
+  // // req.cookie("user_id", user.id);
+  // req.session["user_id"];
+  // res.redirect("/urls");
 });
 
 //Clears cookies after user logsout
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session["user_id"] = null;
   res.redirect("/urls");
 });
 
@@ -208,7 +233,7 @@ app.post("/logout", (req, res) => {
 app.post("/register", (req, res) => {
   const user_id = generateRandomString();
   const email = req.body.email;
-  const password = req.body.password;
+  const password = bcrypt.hashSync(req.body.password, salt);
 
   if (!email || !password) {
     return res.status(400).send("email and password cannot be blank");
@@ -225,14 +250,15 @@ app.post("/register", (req, res) => {
     email: email,
     password: password,
   };
-  res.cookie("user_id", user_id);
+  // res.cookie("user_id", user_id);
+  req.session["user_id"] = user_id;
   res.redirect("/urls");
 });
 
 //Handles log in
 app.get("/login", (req, res) => {
   const templateVars = {
-    user: users[req.cookies["user_id"]],
+    user: users[req.session["user_id"]],
   };
   res.render("login", templateVars);
 });
