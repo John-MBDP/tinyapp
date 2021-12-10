@@ -27,8 +27,8 @@ const users = {
   },
 };
 // function to check if email exists
-const findUserByEmail = (email) => {
-  for (const userId in users) {
+const findUserByEmail = (email, database) => {
+  for (const userId in database) {
     const user = users[userId];
     if (user.email === email) {
       return user;
@@ -54,7 +54,7 @@ const generateRandomString = function () {
 //authenthication
 const authenticateUser = (email, password) => {
   // retrieve the user with that email
-  const user = findUserByEmail(email);
+  const user = findUserByEmail(email, users);
 
   // if we got a user back and the passwords match then return the userObj
   if (user && bcrypt.compareSync(password, user.password)) {
@@ -99,8 +99,8 @@ app.get("/urls", (req, res) => {
   const urls = {};
 
   for (let url in urlDatabase) {
-    console.log(typeof user_id, typeof urlDatabase[url]);
-    console.log(urlDatabase[url]);
+    // console.log(typeof user_id, typeof urlDatabase[url]);
+    // console.log(urlDatabase[url]);
     ///adding urls to the new urls / belongs to the user
     if (user_id === urlDatabase[url].userID) {
       urls[url] = urlDatabase[url].longURL;
@@ -125,10 +125,24 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+// app.get("/urls/:shortURL", (req, res) => {
+//   const user_id = req.session["user_id"];
+//   const user = users[user_id];
+//   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: user };
+//   res.render("urls_show", templateVars);
+// });
 app.get("/urls/:shortURL", (req, res) => {
   const user_id = req.session["user_id"];
   const user = users[user_id];
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: user };
+  const { longURL } = urlDatabase[req.params.shortURL] || {};
+  if (!longURL) {
+    return res.status(404).send(`<h1 text-align: center; >ERROR Page not found! \nStop trying to exploits the params</h1>`);
+  }
+  const templateVars = {
+    shortURL: req.params.shortURL,
+    longURL,
+    user: user,
+  };
   res.render("urls_show", templateVars);
 });
 
@@ -161,7 +175,7 @@ app.get("/register", (req, res) => {
 
 app.post("/urls", (req, res) => {
   if (!req.session.user_id) {
-    return res.status(404).send("You need to login to create/modify a TinyURL");
+    return res.status(404).send("You need to login to create/modify a TinyURL\n");
   }
   const userID = req.session["user_id"];
   const shortURL = generateRandomString();
@@ -182,7 +196,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
       res.redirect("/urls");
     }
   }
-  res.send("You're not authorized to that");
+  res.send("You're not authorized to that.  Don't waste your time\n");
 });
 
 //Handles Edit post request
@@ -239,7 +253,7 @@ app.post("/register", (req, res) => {
     return res.status(400).send("email and password cannot be blank");
   }
 
-  const user = findUserByEmail(email);
+  const user = findUserByEmail(email, users);
 
   if (user) {
     return res.status(400).send("a user with that email already exists");
