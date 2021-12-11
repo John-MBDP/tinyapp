@@ -29,7 +29,7 @@ Registration can be found on the top right or simply by typing http://localhost:
 
 ### **Creating New Links**
 
-Via the navbar, click on Create New URL, enter a link that you would like to shorten. To see a complies list of all your URLs, click on the TinyApp nav bar.
+Via the navbar, click on Create New URL, enter a link that you would like to shorten. To see a complete list of all your URLs, click on the TinyApp nav bar.
 
 ### **Editing Links**
 
