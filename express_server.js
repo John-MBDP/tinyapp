@@ -77,7 +77,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-//Editing the params &&
+//Logic when a user tries to access an invalid link
 app.get("/urls/:shortURL", (req, res) => {
   const user_id = req.session["user_id"];
   const user = users[user_id];
