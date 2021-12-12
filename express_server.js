@@ -185,7 +185,6 @@ app.post("/register", (req, res) => {
     email: email,
     password: password,
   };
-  // res.cookie("user_id", user_id);
   req.session["user_id"] = user_id;
   res.redirect("/urls");
 });
