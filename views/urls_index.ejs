@@ -21,22 +21,6 @@
             <th scope="col">Delete</th>
           </tr>
         </thead>
-        <!-- <tbody>
-        <% for(let url in urls) { %>
-          <tr>
-            <td><%= url %></td>
-            <td><%= urls[url] %></td>
-            <td>
-              <a class="btn btn-outline-primary" href="/urls/<%= url %>">Edit</a>
-            </td>
-            <td>
-            <form method="POST" action="/urls/<%= url %>/delete">
-            <button type="submit" class="btn btn-outline-danger">Delete</button>
-            </form>
-            </td>
-          </tr>
-        <% } %>
-      </tbody> -->
         <tbody>
           <% if (!user) { %>
           <div class="alert alert-success" role="alert">
