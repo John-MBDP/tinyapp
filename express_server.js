@@ -105,7 +105,6 @@ app.get("/register", (req, res) => {
 });
 
 // Handles post request for form submission
-
 app.post("/urls", (req, res) => {
   if (!req.session.user_id) {
     return res.status(404).send("You need to login to create/modify a TinyURL\n");
@@ -159,7 +158,7 @@ app.post("/login", (req, res) => {
   }
 });
 
-//Clears cookies after user logsout
+//Clears cookies after user logout
 app.post("/logout", (req, res) => {
   req.session["user_id"] = null;
   res.redirect("/urls");
