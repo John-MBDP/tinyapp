@@ -131,14 +131,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.send("You're not authorized to that.  Don't waste your time\n");
 });
 
-//Handles Edit post request
-// app.post("/urls/:shortURL", (req, res) => {
-//   const shortURL = req.params.shortURL;
-//   urlDatabase[shortURL].longURL = req.body.updatedURL;
-//   console.log("HERE", req.body.updatedURL);
-//   res.redirect("/urls");
-// });
-
+//Validation for editing links
 app.post("/urls/:shortURL", (req, res) => {
   const userID = req.session.user_id;
   const shortUrl = req.params.shortURL;
