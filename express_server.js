@@ -132,11 +132,22 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 //Handles Edit post request
+// app.post("/urls/:shortURL", (req, res) => {
+//   const shortURL = req.params.shortURL;
+//   urlDatabase[shortURL].longURL = req.body.updatedURL;
+//   console.log("HERE", req.body.updatedURL);
+//   res.redirect("/urls");
+// });
+
 app.post("/urls/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  urlDatabase[shortURL].longURL = req.body.updatedURL;
-  console.log(req.body.updatedURL);
-  res.redirect("/urls");
+  const userID = req.session.user_id;
+  const shortUrl = req.params.shortURL;
+  if (userID && urlDatabase[shortUrl].userID === userID) {
+    const longUrl = req.body.updatedURL;
+    urlDatabase[shortUrl].longURL = longUrl;
+    return res.redirect("/urls");
+  }
+  res.status(401).send("You're not allowed to access this shortURL.");
 });
 
 //Handles Post to /login
